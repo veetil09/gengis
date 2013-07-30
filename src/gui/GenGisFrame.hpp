@@ -107,6 +107,9 @@ namespace GenGIS
 		/** Handle loading of location set CSV files */
 		void LayerOpenLocations( std::vector<std::wstring>& csvTableRows, std::wstring locationNames );
 
+		/** Process location data. */
+		void LayerProcessLocations( wxFileName fullPath, std::vector<LocationModelPtr>& locationModels );
+
 		/** Open sequence data from command line. */
 		void LayerOpenSequenceData( std::string file );
 

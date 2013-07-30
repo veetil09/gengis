@@ -1703,6 +1703,7 @@ void GenGisFrame::LayerOpenLocations( std::string file )
 
 void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, std::wstring locationNames )
 {
+	// No longer valid, kept here for testing purposes
 	//if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
 	//{
 	//	wxMessageBox( wxT( "GenGIS currently supports only a single location set." ),
@@ -1710,13 +1711,13 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 	//	return;
 	//}
 
-	// get selected layer
+	// Get selected layer
 	LayerPtr selectedLayer = App::Inst().GetLayerTreeController()->GetSelectedLayer();
 	if(selectedLayer == LayerPtr() || selectedLayer->GetType() != Layer::MAP)
 	{
 		if(App::Inst().GetLayerTreeController()->GetNumMapLayers() == 1)
 		{
-			// select the first map by default
+			// Select the first map by default
 			App::Inst().GetLayerTreeController()->SetSelection( App::Inst().GetLayerTreeController()->GetMapLayer(0) );
 		}
 	}
@@ -1727,60 +1728,16 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 		std::vector<LocationModelPtr> locationModels;
 		StudyControllerPtr studyController = App::Inst().GetLayerTreeController()->GetStudyLayer(0)->GetStudyController();
 
-		if( LocationSetIO::ParseCSVFile( csvTableRows, studyController, locationModels ) )
+		if( !LocationSetIO::ParseCSVFile( csvTableRows, studyController, locationModels ) )
 		{	
-			// stop refreshing the tree until all sequences are loaded (this is purely for efficency)
-			App::Inst().GetLayerTreeController()->GetTreeCtrl()->Freeze();
-
-			ChartSetViewPtr chartSetCtrl(new ChartSetView());
-			LocationSetLayerPtr locationSet(new LocationSetLayer(UniqueId::Inst().GenerateId(), 
-				App::Inst().GetLayerTreeController()->GetSelectedLayer(),
-				chartSetCtrl));
-
-			locationSet->SetName( wxString( locationNames.c_str(), wxConvISO8859_1 ) );
-			locationSet->SetFullPath( wxString( locationNames.c_str(), wxConvISO8859_1 ) );
-			m_locationSetLayer = locationSet;
-
-			// assign default colour map to location
-			ColourMapManagerPtr colourMapManager = App::Inst().GetColourMapManager();
-			ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
-			ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
-
-			uint categoryId = locationSet->GetNextCategoryId();
-			std::vector<LocationLayerPtr> locationLayers;
-			foreach(LocationModelPtr locationModel, locationModels)
-			{
-				LocationViewPtr locationView(new LocationView(locationModel, App::Inst().GetViewport()->GetCamera(), UniqueId::Inst().GenerateId()));
-				ChartViewPtr pieChartView(new ChartView(locationModel, locationView, newColourMap));
-				chartSetCtrl->AddChart(pieChartView);
-				LocationControllerPtr locationController(new LocationController(locationModel, locationView, pieChartView));
-
-				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), categoryId, locationSet, locationController));			
-				locationLayer->SetName(wxString(locationController->GetId().c_str()));
-				locationLayer->SetFullPath( wxString( locationNames.c_str(), wxConvISO8859_1 ) );
-				locationLayers.push_back(locationLayer);
-
-				locationView->SetLocationLayerId(locationLayer->GetId());
-				pieChartView->SetLocationLayerId(locationLayer->GetId());
-
-				locationSet->AddLocationLayer(locationLayer);
-			}
-			locationSet->GetLocationSetController()->SetLocationSetLayers(locationLayers);
-
-			App::Inst().GetLayerTreeController()->AddLocationSetLayer(locationSet);
-
-			App::Inst().GetLayerTreeController()->GetTreeCtrl()->Thaw();
-
-			// Update Samples legend on sidebar
-			FillSamplesLegend();
-
-			App::Inst().GetLayerTreeController()->GetLocationSetLayer(0)->GetLocationSetController()->GetNumericMetadataFields();
-		}
-		else
-		{
 			wxMessageBox(wxT("Failed to read location sites. Check console window for warning messages."), 
 				wxT("Failed to read location sites"), wxOK | wxICON_INFORMATION);
+			return;
 		}
+
+		// Process imported data
+		wxFileName fullPath( wxString( locationNames.c_str(), wxConvISO8859_1 ) );
+		LayerProcessLocations( fullPath, locationModels );
 	}
 	else
 	{
@@ -1791,6 +1748,7 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 
 void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 {
+	// No longer valid, kept here for testing purposes
 	//if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
 	//{
 	//	wxMessageBox( wxT( "GenGIS currently supports only a single location set." ),
@@ -1798,13 +1756,13 @@ void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 	//	return;
 	//}
 
-	// get selected layer
+	// Get selected layer
 	LayerPtr selectedLayer = App::Inst().GetLayerTreeController()->GetSelectedLayer();
 	if(selectedLayer == LayerPtr() || selectedLayer->GetType() != Layer::MAP)
 	{
 		if(App::Inst().GetLayerTreeController()->GetNumMapLayers() == 1)
 		{
-			// select the first map by default
+			// Select the first map by default
 			App::Inst().GetLayerTreeController()->SetSelection( App::Inst().GetLayerTreeController()->GetMapLayer(0) );
 		}
 	}
@@ -1815,68 +1773,73 @@ void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 		std::vector<LocationModelPtr> locationModels;
 		StudyControllerPtr studyController = App::Inst().GetLayerTreeController()->GetStudyLayer(0)->GetStudyController();
 
-		if( LocationSetIO::Read( fullPath.GetFullPath(), studyController, locationModels ) )
+		if( !LocationSetIO::Read( fullPath.GetFullPath(), studyController, locationModels ) )
 		{	
-			// stop refreshing the tree until all sequences are loaded (this is purely for efficency)
-			App::Inst().GetLayerTreeController()->GetTreeCtrl()->Freeze();
-
-			ChartSetViewPtr chartSetCtrl(new ChartSetView());
-			LocationSetLayerPtr locationSet(new LocationSetLayer(UniqueId::Inst().GenerateId(), 
-				App::Inst().GetLayerTreeController()->GetSelectedLayer(),
-				chartSetCtrl));
-			locationSet->SetName( fullPath.GetName() );
-			locationSet->SetFullPath( fullPath.GetFullPath() );
-			m_locationSetLayer = locationSet;
-
-			LocationSetIO::ReadSourceFile( fullPath.GetFullPath(), locationSet );
-
-			// assign default colour map to location
-			ColourMapManagerPtr colourMapManager = App::Inst().GetColourMapManager();
-			ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
-			ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
-
-			uint categoryId = locationSet->GetNextCategoryId();
-			std::vector<LocationLayerPtr> locationLayers;
-			foreach(LocationModelPtr locationModel, locationModels)
-			{
-				LocationViewPtr locationView(new LocationView(locationModel, App::Inst().GetViewport()->GetCamera(), UniqueId::Inst().GenerateId()));
-				ChartViewPtr pieChartView(new ChartView(locationModel, locationView, newColourMap));
-				chartSetCtrl->AddChart(pieChartView);
-				LocationControllerPtr locationController(new LocationController(locationModel, locationView, pieChartView));
-
-				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), categoryId, locationSet, locationController));			
-				locationLayer->SetName(wxString(locationController->GetId().c_str()));
-				locationLayer->SetFullPath( fullPath.GetFullPath() );
-				locationLayers.push_back(locationLayer);
-
-				locationView->SetLocationLayerId(locationLayer->GetId());
-				pieChartView->SetLocationLayerId(locationLayer->GetId());
-
-				locationSet->AddLocationLayer(locationLayer);
-			}
-
-			locationSet->GetLocationSetController()->SetLocationSetLayers(locationLayers);
-
-			App::Inst().GetLayerTreeController()->AddLocationSetLayer(locationSet);
-
-			App::Inst().GetLayerTreeController()->GetTreeCtrl()->Thaw();
-
-			// Update Samples legend on sidebar
-			FillSamplesLegend();
-
-			App::Inst().GetLayerTreeController()->GetLocationSetLayer(0)->GetLocationSetController()->GetNumericMetadataFields();
-		}
-		else
-		{
 			wxMessageBox(wxT("Failed to read location sites from file. Check console window for warning messages."), 
 				wxT("Failed to read file"), wxOK | wxICON_INFORMATION);
+			return;
 		}
+
+		// Process imported data
+		LayerProcessLocations( fullPath, locationModels );
 	}
 	else
 	{
 		wxMessageBox(wxT("Please select a map node before adding a location sites layer."),
 			wxT("Select map node"), wxOK | wxICON_INFORMATION);
 	}
+}
+
+void GenGisFrame::LayerProcessLocations( wxFileName fullPath, std::vector<LocationModelPtr>& locationModels )
+{
+	// Stop refreshing the tree until all sequences are loaded (this is purely for efficency)
+	App::Inst().GetLayerTreeController()->GetTreeCtrl()->Freeze();
+
+	ChartSetViewPtr chartSetCtrl(new ChartSetView());
+	LocationSetLayerPtr locationSet(new LocationSetLayer(UniqueId::Inst().GenerateId(), 
+		App::Inst().GetLayerTreeController()->GetSelectedLayer(),
+		chartSetCtrl));
+	locationSet->SetName( fullPath.GetName() );
+	locationSet->SetFullPath( fullPath.GetFullPath() );
+	m_locationSetLayer = locationSet;
+
+	LocationSetIO::ReadSourceFile( fullPath.GetFullPath(), locationSet );
+
+	// assign default colour map to location
+	ColourMapManagerPtr colourMapManager = App::Inst().GetColourMapManager();
+	ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
+	ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
+
+	uint categoryId = locationSet->GetNextCategoryId();
+	std::vector<LocationLayerPtr> locationLayers;
+	foreach(LocationModelPtr locationModel, locationModels)
+	{
+		LocationViewPtr locationView(new LocationView(locationModel, App::Inst().GetViewport()->GetCamera(), UniqueId::Inst().GenerateId()));
+		ChartViewPtr pieChartView(new ChartView(locationModel, locationView, newColourMap));
+		chartSetCtrl->AddChart(pieChartView);
+		LocationControllerPtr locationController(new LocationController(locationModel, locationView, pieChartView));
+
+		LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), categoryId, locationSet, locationController));			
+		locationLayer->SetName(wxString(locationController->GetId().c_str()));
+		locationLayer->SetFullPath( fullPath.GetFullPath() );
+		locationLayers.push_back(locationLayer);
+
+		locationView->SetLocationLayerId(locationLayer->GetId());
+		pieChartView->SetLocationLayerId(locationLayer->GetId());
+
+		locationSet->AddLocationLayer(locationLayer);
+	}
+
+	locationSet->GetLocationSetController()->SetLocationSetLayers(locationLayers);
+
+	App::Inst().GetLayerTreeController()->AddLocationSetLayer(locationSet);
+
+	App::Inst().GetLayerTreeController()->GetTreeCtrl()->Thaw();
+
+	// Update Samples legend on sidebar
+	FillSamplesLegend();
+
+	App::Inst().GetLayerTreeController()->GetLocationSetLayer(0)->GetLocationSetController()->GetNumericMetadataFields();
 }
 
 void GenGisFrame::OnLayerOpenSequenceData( wxCommandEvent& event )
