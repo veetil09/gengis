@@ -440,6 +440,15 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 			mapPtr->AddLocationSetLayer(locationSet);
 		}
 
+		//if ( GetNumLocationSetLayers == 0 )
+		//{
+		//	//
+		//}
+		//else
+		//{
+		//	//
+		//}
+
 		// add location set to tree control
 		LayerTreeItem* layerItem = new LayerTreeItem(locationSet);
 		wxString idStr(std::wstring(_T("Location Set : ") + locationSet->GetName()).c_str());

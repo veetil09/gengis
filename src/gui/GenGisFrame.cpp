@@ -1795,17 +1795,33 @@ void GenGisFrame::LayerProcessLocations( wxFileName fullPath, std::vector<Locati
 	// Stop refreshing the tree until all sequences are loaded (this is purely for efficency)
 	App::Inst().GetLayerTreeController()->GetTreeCtrl()->Freeze();
 
-	ChartSetViewPtr chartSetCtrl(new ChartSetView());
-	LocationSetLayerPtr locationSet(new LocationSetLayer(UniqueId::Inst().GenerateId(), 
-		App::Inst().GetLayerTreeController()->GetSelectedLayer(),
-		chartSetCtrl));
+	ChartSetViewPtr chartSetCtrl;
+	LocationSetLayerPtr locationSet;
+
+	if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
+	{
+		locationSet  = App::Inst().GetLayerTreeController()->GetLocationSetLayer(0);
+		chartSetCtrl = locationSet->GetChartSetView();
+	}
+	else
+	{
+		chartSetCtrl = ChartSetViewPtr( new ChartSetView() );
+		locationSet  = LocationSetLayerPtr(
+			new LocationSetLayer(
+				UniqueId::Inst().GenerateId(), 
+				App::Inst().GetLayerTreeController()->GetSelectedLayer(),
+				chartSetCtrl
+			)
+		);
+	}
+
 	locationSet->SetName( fullPath.GetName() );
 	locationSet->SetFullPath( fullPath.GetFullPath() );
 	m_locationSetLayer = locationSet;
 
 	LocationSetIO::ReadSourceFile( fullPath.GetFullPath(), locationSet );
 
-	// assign default colour map to location
+	// Assign default colour map to location
 	ColourMapManagerPtr colourMapManager = App::Inst().GetColourMapManager();
 	ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
 	ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
@@ -3192,8 +3208,7 @@ void GenGisFrame::OnPerformLinearAxesAnalysis( wxCommandEvent& event )
 	// show results of linear analysis
 	if(results.size() > 0)
 	{
-		LinearAnalysisPlotDlg* dlg = new LinearAnalysisPlotDlg(App::Inst().GetMainWindow(), 
-																															m_treeLayer, results, rootNode);
+		LinearAnalysisPlotDlg* dlg = new LinearAnalysisPlotDlg(App::Inst().GetMainWindow(), m_treeLayer, results, rootNode);
 		dlg->Show();
 	}
 }
