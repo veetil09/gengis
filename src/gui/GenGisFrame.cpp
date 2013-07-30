@@ -1746,6 +1746,7 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 			ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
 			ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
 
+			uint categoryId = locationSet->GetNextCategoryId();
 			std::vector<LocationLayerPtr> locationLayers;
 			foreach(LocationModelPtr locationModel, locationModels)
 			{
@@ -1754,7 +1755,7 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 				chartSetCtrl->AddChart(pieChartView);
 				LocationControllerPtr locationController(new LocationController(locationModel, locationView, pieChartView));
 
-				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), locationSet, locationController));			
+				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), categoryId, locationSet, locationController));			
 				locationLayer->SetName(wxString(locationController->GetId().c_str()));
 				locationLayer->SetFullPath( wxString( locationNames.c_str(), wxConvISO8859_1 ) );
 				locationLayers.push_back(locationLayer);
@@ -1790,12 +1791,12 @@ void GenGisFrame::LayerOpenLocations( std::vector<std::wstring>& csvTableRows, s
 
 void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 {
-	if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
-	{
-		//wxMessageBox( wxT( "GenGIS currently supports only a single location set." ),
-		//	wxT( "Multiple location sets not supported" ), wxOK | wxICON_INFORMATION );
-		//return;
-	}
+	//if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
+	//{
+	//	wxMessageBox( wxT( "GenGIS currently supports only a single location set." ),
+	//		wxT( "Multiple location sets not supported" ), wxOK | wxICON_INFORMATION );
+	//	return;
+	//}
 
 	// get selected layer
 	LayerPtr selectedLayer = App::Inst().GetLayerTreeController()->GetSelectedLayer();
@@ -1834,6 +1835,7 @@ void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 			ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
 			ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
 
+			uint categoryId = locationSet->GetNextCategoryId();
 			std::vector<LocationLayerPtr> locationLayers;
 			foreach(LocationModelPtr locationModel, locationModels)
 			{
@@ -1842,7 +1844,7 @@ void GenGisFrame::LayerOpenLocations( wxFileName fullPath )
 				chartSetCtrl->AddChart(pieChartView);
 				LocationControllerPtr locationController(new LocationController(locationModel, locationView, pieChartView));
 
-				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), locationSet, locationController));			
+				LocationLayerPtr locationLayer(new LocationLayer(UniqueId::Inst().GenerateId(), categoryId, locationSet, locationController));			
 				locationLayer->SetName(wxString(locationController->GetId().c_str()));
 				locationLayer->SetFullPath( fullPath.GetFullPath() );
 				locationLayers.push_back(locationLayer);

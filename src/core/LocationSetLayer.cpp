@@ -41,7 +41,7 @@
 using namespace GenGIS;
 
 LocationSetLayer::LocationSetLayer(uint id, LayerPtr parent, ChartSetViewPtr chartSetView) :
-	Layer(id, Layer::LOCATION_SET, parent), m_chartSetView(chartSetView), m_locationSetController(new LocationSetController())
+	Layer(id, Layer::LOCATION_SET, parent), m_nextCategoryId(0), m_chartSetView(chartSetView), m_locationSetController(new LocationSetController())
 {
 
 }
@@ -49,6 +49,7 @@ LocationSetLayer::LocationSetLayer(uint id, LayerPtr parent, ChartSetViewPtr cha
 template<class Archive>
 void LocationSetLayer::serialize(Archive & ar, const unsigned int version)
 {
+	ar & m_nextCategoryId;        // unsigned int
 	ar & boost::serialization::base_object<Layer>(*this);
 	ar & m_locationLayers;        // std::vector<LocationLayerPtr>
 	ar & m_locationSetController; // LocationSetControllerPtr

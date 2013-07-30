@@ -163,6 +163,14 @@ namespace GenGIS
 		/** Check if there is sequence data associate with at least one location within this location set. */
 		bool IsSequencesData();
 
+		/** Return next available category id and increment value for next request. */
+		uint GetNextCategoryId()
+		{
+			uint categoryId = m_nextCategoryId;
+			m_nextCategoryId++;
+			return categoryId;
+		}
+
 	private:
 		/** Serialization. */
 		friend class boost::serialization::access;
@@ -174,6 +182,9 @@ namespace GenGIS
 		void serialize(Archive & ar, const unsigned int version);
 
 	protected:
+		/** Keeps track of the next number to use as location set category. */
+		uint m_nextCategoryId;
+
 		/** Chart controller for laying out chart views associated with this location set. */
 		ChartSetViewPtr m_chartSetView;
 

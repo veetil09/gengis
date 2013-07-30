@@ -51,8 +51,8 @@ namespace GenGIS
 		* @param parent Parent of this layer.
 		* @param location Location controller to associate with this layer.
 		*/
-		explicit LocationLayer(uint id, LayerPtr parent, LocationControllerPtr locationController) :
-			Layer(id, Layer::LOCATION, parent), m_locationController(locationController) {}
+		explicit LocationLayer(uint id, uint category_id, LayerPtr parent, LocationControllerPtr locationController) :
+			Layer(id, Layer::LOCATION, parent), m_categoryId(category_id), m_locationController(locationController) {}
 
 		/** Destructor. */
 		~LocationLayer() {}
@@ -165,6 +165,9 @@ namespace GenGIS
 		void serialize(Archive & ar, const unsigned int version);
 
 	private:
+		/** Location set category id to which this location belongs. */
+		uint m_categoryId;
+
 		/** Controller for location model. */
 		LocationControllerPtr m_locationController;
 
@@ -183,12 +186,8 @@ namespace boost
 		inline void save_construct_data(Archive & ar, const LocationLayer * t, const unsigned int file_version)
 		{
 			// Save data required to construct instance
-			//uint id = t->GetId();             // m_id (uint, Layer class)
-			//ar << id; 
-			//ar << t->GetParent();             // m_parent (LayerPtr, Layer class)
-			//ar << t->GetLocationController(); // LocationControllerPtr
-
 			ar << t->m_id;                 // uint (Layer class)
+			ar << t->m_categoryId;         // unsigned int
 			ar << t->m_parent;             // LayerPtr (Layer class)
 			ar << t->m_locationController; // LocationControllerPtr
 		}
@@ -200,13 +199,16 @@ namespace boost
 			uint _id;
 			ar >> _id;
 
+			uint _categoryId;
+			ar >> _categoryId;
+
 			LayerPtr _parent;
 			ar >> _parent;
 
 			LocationControllerPtr _locationController;
 			ar >> _locationController;
 
-			::new(t)LocationLayer(_id, _parent, _locationController);
+			::new(t)LocationLayer(_id, _categoryId, _parent, _locationController);
 		}
 	}
 }
