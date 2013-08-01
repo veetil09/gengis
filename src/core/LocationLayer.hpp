@@ -154,6 +154,11 @@ namespace GenGIS
 			return m_locationController;
 		}
 
+		uint GetCategoryId()
+		{
+			return m_categoryId;
+		}
+
 	private:
 		/** Serialization. */
 		friend class boost::serialization::access;

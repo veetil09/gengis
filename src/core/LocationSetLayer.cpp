@@ -209,3 +209,17 @@ void LocationSetLayer::ToggleActive()
 { 
 	m_locationSetController->ToggleActive(); 
 }
+
+uint LocationSetLayer::GetNumberOfCategories()
+{
+	if ( m_locationLayers.empty() ) return 0;
+
+	uint currentCategory;
+	std::map<uint, uint> categories;
+	for (std::vector<LocationLayerPtr>::iterator it = m_locationLayers.begin() ; it != m_locationLayers.end(); ++it)
+	{
+		currentCategory = (*it)->GetCategoryId();
+		categories[currentCategory]++;
+	}
+	return categories.size();
+}

@@ -171,6 +171,8 @@ namespace GenGIS
 			return categoryId;
 		}
 
+		uint GetNumberOfCategories();
+
 	private:
 		/** Serialization. */
 		friend class boost::serialization::access;

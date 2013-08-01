@@ -430,7 +430,8 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 	if(selectedLayer != LayerPtr() && selectedLayer->GetType() == Layer::MAP)
 	{
 		// At this point during deserialization, the location set layer is already connected to the map layer
-		if (!App::Inst().IsCurrentlySerializing())
+		if ( !App::Inst().IsCurrentlySerializing() &&
+			( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() == 0 ) )
 		{
 			// add location set to tree controller so it can be easily access
 			m_locationSets.push_back(locationSet);
