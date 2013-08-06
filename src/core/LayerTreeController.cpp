@@ -411,7 +411,7 @@ bool LayerTreeController::AddTreeLayer(TreeLayerPtr tree)
 	return true;
 }
 
-bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
+bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet, uint categoryId)
 {
 	LayerPtr selectedLayer = GetSelectedLayer();
 
@@ -465,6 +465,9 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 		for(unsigned int i = 0; i < locationSet->GetNumLocationLayers(); ++i)
 		{
 			LocationLayerPtr location = locationSet->GetLocationLayer(i);
+
+			if ( location->GetCategoryId() != categoryId )
+				continue;
 
 			if (!App::Inst().IsCurrentlySerializing())
 			{

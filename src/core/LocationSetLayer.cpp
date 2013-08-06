@@ -62,6 +62,7 @@ void LocationSetLayer::AddLocationLayer(LocationLayerPtr locationLayer)
 	m_locationLayers.push_back(locationLayer);
 }
 
+// [###] Needs to be tested using categories
 LocationLayerPtr LocationSetLayer::GetLocationLayer(const std::wstring& name) const
 {
 	std::vector<LocationLayerPtr>::const_iterator iter;
@@ -76,6 +77,7 @@ LocationLayerPtr LocationSetLayer::GetLocationLayer(const std::wstring& name) co
 	return LocationLayerPtr();
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::RemoveLocationLayerByIndex(unsigned int index)
 {
 	m_locationLayers.at(index)->RemoveAllSequenceLayers();
@@ -83,6 +85,7 @@ void LocationSetLayer::RemoveLocationLayerByIndex(unsigned int index)
 	m_locationLayers.erase(m_locationLayers.begin() + index);
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::RemoveLocationLayerByName(const std::wstring& name)
 {
 	std::vector<LocationLayerPtr>::iterator iter;
@@ -97,6 +100,7 @@ void LocationSetLayer::RemoveLocationLayerByName(const std::wstring& name)
 	}
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::RemoveAllLocationLayers()
 {
 	std::vector<LocationLayerPtr>::iterator iter;
@@ -107,6 +111,7 @@ void LocationSetLayer::RemoveAllLocationLayers()
 	m_locationSetController->RemoveAllLocationLayers();
 }
 
+// [###] Needs to be tested using categories
 LayerPtr LocationSetLayer::GetLayer(uint id) const
 {
 	for(unsigned int index = 0; index < GetNumLocationLayers(); index++)
@@ -125,6 +130,7 @@ LayerPtr LocationSetLayer::GetLayer(uint id) const
 	return LayerPtr();
 }
 
+// [###] Needs to be tested using categories
 bool LocationSetLayer::RemoveLayer(uint id)
 {
 	bool bFound = false;
@@ -143,6 +149,7 @@ bool LocationSetLayer::RemoveLayer(uint id)
 	return bFound;
 }
 
+// [###] Needs to be tested using categories
 bool LocationSetLayer::RemoveLocationLayerById(uint id)
 {
 	std::vector<LocationLayerPtr>::iterator iter;
@@ -158,6 +165,7 @@ bool LocationSetLayer::RemoveLocationLayerById(uint id)
 	return false;
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::Render()
 {
 	if(!IsActive())
@@ -171,6 +179,7 @@ void LocationSetLayer::Render()
 	}
 }
 
+// [###] Needs to be tested using categories
 bool LocationSetLayer::IsSequencesData()
 {
 	foreach(LocationLayerPtr locationLayer, m_locationLayers)
@@ -182,6 +191,7 @@ bool LocationSetLayer::IsSequencesData()
 	return false;
 }
 
+// [###] Needs to be tested using categories
 std::vector<LocationLayerPtr> LocationSetLayer::GetAllActiveLocationLayers() const
 {
 	std::vector<LocationLayerPtr> activeLocLayers;
@@ -195,16 +205,19 @@ std::vector<LocationLayerPtr> LocationSetLayer::GetAllActiveLocationLayers() con
 	return activeLocLayers;
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::SetActive(bool state) 
 { 
 	m_locationSetController->SetActive(state);
 }
 
+// [###] Needs to be tested using categories
 bool LocationSetLayer::IsActive() const 
 { 
 	return m_locationSetController->IsActive(); 
 }
 
+// [###] Needs to be tested using categories
 void LocationSetLayer::ToggleActive() 
 { 
 	m_locationSetController->ToggleActive(); 

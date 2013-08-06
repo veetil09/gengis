@@ -911,41 +911,44 @@ void GenGisFrame::OpenSession( wxString sessionFullPath )
 		LayerOpenMap( mapLayer->GetFullPath(), 0);
 
 		// At this stage, if the map file is not found cancel the loading process and output an error message
-			if( !App::Inst().GetMapController()->IsLoaded() )
-			{
-				Log::Inst().Error("(Error) Could not locate map file associated with this session.");
-				wxMessageBox( wxT( "GenGIS could not locate the map file associated with this session." ),
-				wxT( "Map file not found" ), wxOK | wxICON_ERROR );
-
-				m_pnlViewport->Thaw();
-				App::Inst().ToggleSerializationStatus();
-				return;
-			}	
-		
-
-		for ( uint currLocSetId = 0; currLocSetId < mapLayer->GetNumLocationSetLayers(); ++currLocSetId )
-		{	
-			// Add the Location Set Layer to the tree controller (wxTreeCtrl)
-			LocationSetLayerPtr locationSetLayer = mapLayer->GetLocationSetLayer( currLocSetId );
-			layerTreeController->AddLocationSetLayer( locationSetLayer );
-			m_locationSetLayer = locationSetLayer;
-
-			// Select the current Location Set layer 
-			layerTreeController->SetSelection( locationSetLayer );
-
-			// Add the Sequence Layer to the tree controller (wxTreeCtrl)
-			layerTreeController->AddSequence( locationSetLayer );
-		}
-
-		for ( uint currTreeId = 0; currTreeId < mapLayer->GetNumTreeLayers(); ++currTreeId )
+		if( !App::Inst().GetMapController()->IsLoaded() )
 		{
-			// Select the current Map layer
-			layerTreeController->SetSelection( mapLayer );
+			Log::Inst().Error("(Error) Could not locate map file associated with this session.");
+			wxMessageBox( wxT( "GenGIS could not locate the map file associated with this session." ),
+			wxT( "Map file not found" ), wxOK | wxICON_ERROR );
 
-			// Add the Tree Layer to the tree controller (wxTreeCtrl)
-			TreeLayerPtr treeLayer = mapLayer->GetTreeLayer( currTreeId );
-			layerTreeController->AddTreeLayer( treeLayer );
+			m_pnlViewport->Thaw();
+			App::Inst().ToggleSerializationStatus();
+			return;
 		}	
+		
+		if ( mapLayer->GetNumLocationSetLayers() > 0 )
+		{
+			LocationSetLayerPtr locationSetLayer = mapLayer->GetLocationSetLayer( 0 );
+
+			for ( uint currLocSetCategotyId = 0; currLocSetCategotyId < locationSetLayer->GetNumberOfCategories(); ++currLocSetCategotyId )
+			{	
+				// Add the Location Set Layer to the tree controller (wxTreeCtrl)
+				layerTreeController->AddLocationSetLayer( locationSetLayer, currLocSetCategotyId );
+				m_locationSetLayer = locationSetLayer;
+
+				// Select the current Location Set layer 
+				layerTreeController->SetSelection( locationSetLayer );
+
+				// Add the Sequence Layer to the tree controller (wxTreeCtrl)
+				layerTreeController->AddSequence( locationSetLayer );
+			}
+
+			for ( uint currTreeId = 0; currTreeId < mapLayer->GetNumTreeLayers(); ++currTreeId )
+			{
+				// Select the current Map layer
+				layerTreeController->SetSelection( mapLayer );
+
+				// Add the Tree Layer to the tree controller (wxTreeCtrl)
+				TreeLayerPtr treeLayer = mapLayer->GetTreeLayer( currTreeId );
+				layerTreeController->AddTreeLayer( treeLayer );
+			}
+		}
 
 		FillSequenceLegend();
 		FillSamplesLegend();
@@ -1854,7 +1857,7 @@ void GenGisFrame::LayerProcessLocations( wxFileName fullPath, std::vector<Locati
 
 	locationSet->GetLocationSetController()->SetLocationSetLayers(locationLayers);
 
-	App::Inst().GetLayerTreeController()->AddLocationSetLayer(locationSet);
+	App::Inst().GetLayerTreeController()->AddLocationSetLayer(locationSet, categoryId);
 
 	App::Inst().GetLayerTreeController()->GetTreeCtrl()->Thaw();
 
