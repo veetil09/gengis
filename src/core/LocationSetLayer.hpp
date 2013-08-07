@@ -164,14 +164,22 @@ namespace GenGIS
 		bool IsSequencesData();
 
 		/** Return next available category id and increment value for next request. */
-		uint GetNextCategoryId()
+		uint GetNextAvailableCategoryId();
+
+		/** Return number of categories in location set. */
+		uint GetNumberOfCategories();
+
+		/** Return currently active location set category. */
+		uint GetActiveCategory()
 		{
-			uint categoryId = m_nextCategoryId;
-			m_nextCategoryId++;
-			return categoryId;
+			return m_activeCategory;
 		}
 
-		uint GetNumberOfCategories();
+		/** Set currently active location set category. */
+		void SetActiveCategory( uint category )
+		{
+			m_activeCategory = category;
+		}
 
 	private:
 		/** Serialization. */
@@ -185,7 +193,9 @@ namespace GenGIS
 
 	protected:
 		/** Keeps track of the next number to use as location set category. */
-		uint m_nextCategoryId;
+		uint m_nextAvailableCategory;
+
+		uint m_activeCategory;
 
 		/** Chart controller for laying out chart views associated with this location set. */
 		ChartSetViewPtr m_chartSetView;

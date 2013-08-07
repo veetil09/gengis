@@ -1835,7 +1835,7 @@ void GenGisFrame::LayerProcessLocations( wxFileName fullPath, std::vector<Locati
 	ColourMapPtr defaultColourMap = colourMapManager->GetDefaultDiscreteColourMap();
 	ColourMapDiscretePtr newColourMap(new ColourMapDiscrete(defaultColourMap));
 
-	uint categoryId = locationSet->GetNextCategoryId();
+	uint categoryId = locationSet->GetNextAvailableCategoryId();
 	std::vector<LocationLayerPtr> locationLayers;
 	foreach(LocationModelPtr locationModel, locationModels)
 	{
