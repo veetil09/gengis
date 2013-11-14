@@ -411,9 +411,6 @@ bool LayerTreeController::AddTreeLayer(TreeLayerPtr tree)
 	return true;
 }
 
-<<<<<<< HEAD
-bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet, uint categoryId)
-=======
 bool LayerTreeController::AddLocationSetLayerAtPosition(LocationSetLayerPtr locationSet, int pos)
 {
 	LayerPtr selectedLayer = GetSelectedLayer();
@@ -488,7 +485,6 @@ bool LayerTreeController::AddLocationSetLayerAtPosition(LocationSetLayerPtr loca
 	return true;
 }
 bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
->>>>>>> origin/AlexDev
 {
 	LayerPtr selectedLayer = GetSelectedLayer();
 
@@ -507,8 +503,7 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 	if(selectedLayer != LayerPtr() && selectedLayer->GetType() == Layer::MAP)
 	{
 		// At this point during deserialization, the location set layer is already connected to the map layer
-		if ( !App::Inst().IsCurrentlySerializing() &&
-			( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() == 0 ) )
+		if (!App::Inst().IsCurrentlySerializing())
 		{
 			// add location set to tree controller so it can be easily access
 			m_locationSets.push_back(locationSet);
@@ -517,15 +512,6 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 			MapLayerPtr mapPtr = boost::dynamic_pointer_cast<MapLayer>(selectedLayer);
 			mapPtr->AddLocationSetLayer(locationSet);
 		}
-
-		//if ( GetNumLocationSetLayers == 0 )
-		//{
-		//	//
-		//}
-		//else
-		//{
-		//	//
-		//}
 
 		// add location set to tree control
 		LayerTreeItem* layerItem = new LayerTreeItem(locationSet);
@@ -542,9 +528,6 @@ bool LayerTreeController::AddLocationSetLayer(LocationSetLayerPtr locationSet)
 		for(unsigned int i = 0; i < locationSet->GetNumLocationLayers(); ++i)
 		{
 			LocationLayerPtr location = locationSet->GetLocationLayer(i);
-
-			if ( location->GetCategoryId() != categoryId )
-				continue;
 
 			if (!App::Inst().IsCurrentlySerializing())
 			{
