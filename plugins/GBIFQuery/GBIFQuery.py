@@ -24,8 +24,8 @@ from GBIFQueryLayout import GBIFQueryLayout
 import GenGIS
 import wx
 import math
-import pickle
-import urllib2
+#import pickle
+#import urllib2
 import re
 import sys
 from xml.dom import minidom
@@ -36,12 +36,10 @@ from GBIFSpecific import GBIFSpecific
 class GBIFQuery(GBIFQueryLayout):
 	#	Global variables to store queried information
 	__obs__ = []
-	__conversions__ = []
 	__selectedTaxon__= set()
 	__description__=""
 	
 	def __init__(self,parent=None):
-#		import pdb; pdb.set_trace()
 		MaxLon,MinLon,MaxLat,MinLat = 180,-180,90,-90
 		self.GBIFSpecific = GBIFSpecific()
 		self.GBIFGeneric = GBIFGeneric()
@@ -56,7 +54,6 @@ class GBIFQuery(GBIFQueryLayout):
 		self.graphicalElementIds=[]
 		self.__selectedTaxon__=set()
 		self.__obs__ = []
-		self.__conversions__ = []
 		self.m_IDList.Clear()
 		#fix to expand summary box enough to print two lines of text properly
 		self.m_Summary.SetLabel("\n\n")
@@ -68,23 +65,23 @@ class GBIFQuery(GBIFQueryLayout):
 		if GenGIS.layerTree.GetNumMapLayers() > 0 :
 			self.m_AddData.Enable()
 			borders = GenGIS.layerTree.GetMapLayer(0).GetController().GetMapBorders()
-			#Text boxes hate non String types. use int to round, and string to make them fit the container
-			
-			self.m_MinLat.SetValue(str(borders.y1))
-			self.m_MaxLat.SetValue(str(borders.dy))
-			self.m_MinLon.SetValue(str(borders.x1))
-			self.m_MaxLon.SetValue(str(borders.dx))
-			
 			#check if geographic coordinates are used or some other measure; only geographic are compatible
-			geographic = GenGIS.StudyController.IsGeographic(GenGIS.study.GetController())
-			if(not geographic):
-				wx.MessageBox("Geographic coordinates are not being used in the current map file. Only geographic coordinates are compatible with GBIF. Geographic range will need to be manually set, and any returned data will not display correctly.","!!!!!!!Warning!!!!!!!")
+			geographic = GenGIS.StudyController.IsUsingGeographic(GenGIS.study.GetController())
+			projected = GenGIS.StudyController.IsUsingProjection(GenGIS.study.GetController())
+			if(not (geographic or projected)):
+				wx.MessageBox("Geographic coordinates are not being used in the current map file. Only geographic coordinates are compatible with GBIF. Geographic range will need to be manually set, and any returned data will not display correctly.","Warning")
 				self.m_AddData.Disable()
 				self.m_MinLat.SetValue(str(MinLat))
 				self.m_MaxLat.SetValue(str(MaxLat))
 				self.m_MinLon.SetValue(str(MinLon))
 				self.m_MaxLon.SetValue(str(MaxLon))
-		
+			else:
+				#Text boxes hate non String types. use int to round, and string to make them fit the container
+				self.m_MinLat.SetValue(str(max(MinLat,borders.y1)))
+				self.m_MaxLat.SetValue(str(min(MaxLat,borders.dy)))
+				self.m_MinLon.SetValue(str(max(MinLon,borders.x1)))
+				self.m_MaxLon.SetValue(str(min(MaxLon,borders.dx)))
+			
 	#	Query GBIF for Taxa in Lat/Lon Boundary
 	def OnSearch(self,event):
 		wx.BeginBusyCursor()
@@ -100,7 +97,8 @@ class GBIFQuery(GBIFQueryLayout):
 			maxLatitude= float(self.m_MaxLat.GetValue())
 			minLongitude= float(self.m_MinLon.GetValue())
 			maxLongitude= float(self.m_MaxLon.GetValue())
-			self.GBIFSpecific.GETTAXRESULT(taxon,self.m_Result)
+			result=self.GBIFSpecific.GETTAXRESULT(taxon,self.m_Result)
+			self.m_Result.InsertItems(result,0)
 		wx.EndBusyCursor()
 		
 	#	Create Sequence and Location files for selected Taxa
@@ -118,9 +116,8 @@ class GBIFQuery(GBIFQueryLayout):
 			maxLongitude= float(self.m_MaxLon.GetValue())
 			self.m_Progress.WriteText("Starting...\n")
 			for tax in self.__selectedTaxon__:
-				obs,con,recs,distLocs,description= self.GBIFSpecific.GETOBSENTIRERANGE(tax[1].split(),tax[0],minLatitude,maxLatitude,minLongitude,maxLongitude,self.m_Progress)
+				obs,recs,distLocs,description= self.GBIFSpecific.GETOBSENTIRERANGE(tax[1].split(),tax[0],minLatitude,maxLatitude,minLongitude,maxLongitude,self.m_Progress)
 				self.__obs__.append(obs)
-				self.__conversions__.append(con)
 				self.__description__+="%s\n" % description
 				records += recs
 				distLocations +=distLocs
@@ -145,16 +142,16 @@ class GBIFQuery(GBIFQueryLayout):
 		self.m_Progress.WriteText("Retrieving record counts.\n")
 		self.m_Summary.SetLabel("\n")
 		if(self.__selectedTaxon__):
-			minLatitude= float(self.m_MinLat.GetValue())
-			maxLatitude= float(self.m_MaxLat.GetValue())
-			minLongitude= float(self.m_MinLon.GetValue())
-			maxLongitude= float(self.m_MaxLon.GetValue())
+			minLatitude= self.GBIFGeneric.roundCoord(self.m_MinLat.GetValue())
+			maxLatitude= self.GBIFGeneric.roundCoord(self.m_MaxLat.GetValue())
+			minLongitude= self.GBIFGeneric.roundCoord(self.m_MinLon.GetValue())
+			maxLongitude= self.GBIFGeneric.roundCoord(self.m_MaxLon.GetValue())
 			count=0
 			for tax in self.__selectedTaxon__:
 				count+=self.GBIFSpecific.GETCOUNT(tax[1].split(),tax[0],minLatitude,maxLatitude,minLongitude,maxLongitude,self.m_Progress)
+			self.m_Summary.SetLabel("There were %d records for the given location." % count)
 		else:
 			wx.MessageBox("Please select some Taxa.")
-		self.m_Summary.SetLabel("There were %d records for the given location." % count) 
 		wx.EndBusyCursor()
 		
 	#	Redirects User to Wiki page for this plugin
@@ -164,14 +161,17 @@ class GBIFQuery(GBIFQueryLayout):
 	#	Adds Data to GenGIS
 	def OnAddData(self,event):
 		if (len(self.__obs__) > 0):
-			OUTLText, OUTSText = self.GBIFGeneric.GETTEXT(self.__obs__,self.__conversions__)
+			OUTLText, OUTSText = self.GBIFGeneric.GETTEXT(self.__obs__)
 			OUTLArray=self.GBIFGeneric.CPPOUT(OUTLText)
 			OUTSArray=self.GBIFGeneric.CPPOUT(OUTSText)
-			OUTLArray.insert(0,"Site ID,Latitude,Longitude,Richness,Cell ID")
-			OUTSArray.insert(0,"Sequence ID,Site ID,CellLat,CellLong,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords")					
+			# Removing some Gridding based artifacts, may become useful again in the future.
+			#OUTLArray.insert(0,"Site ID,Latitude,Longitude,Richness,Cell ID,Taxon,Genus")
+			OUTLArray.insert(0,"Site ID,Latitude,Longitude,Cell ID,Taxon,Genus")
+			#OUTSArray.insert(0,"Sequence ID,Site ID,CellLat,CellLong,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords")					
+			OUTSArray.insert(0,"Sequence ID,Site ID,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords")					
 			OUTLArray.pop()
 			OUTSArray.pop()
-			layerName = "GBIFLayer_%d" % GenGIS.layerTree.GetNumLocationLayers()
+			layerName = "GBIFLayer_%d" % GenGIS.layerTree.GetNumLocationSetLayers()
 			GenGIS.mainWindow.OpenLocationsCSVFile(OUTLArray, layerName)
 			GenGIS.mainWindow.OpenSequenceCSVFile(OUTSArray, layerName)
 			
@@ -196,9 +196,12 @@ class GBIFQuery(GBIFQueryLayout):
 				OUTLfile = ("%s/%s_locs.csv" % (dir,file_split[0]))				
 				OUTSfile = ("%s/%s_seqs.csv" % (dir,file_split[0]))
 				OUTDfile = ("%s/%s_source.txt" % (dir,file_split[0]))
-				OUTLText, OUTSText = self.GBIFGeneric.GETTEXT(self.__obs__,self.__conversions__)
-				self.GBIFGeneric.WRITEEXPORT(OUTLfile,OUTLText,"Site ID,Latitude,Longitude,Richness,Cell ID\n")
-				self.GBIFGeneric.WRITEEXPORT(OUTSfile,OUTSText,"Sequence ID,Site ID,CellLat,CellLong,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords\n")
+				OUTLText, OUTSText = self.GBIFGeneric.GETTEXT(self.__obs__)
+				# Removing some Gridding based artifacts, may become useful again in the future.
+			#	self.GBIFGeneric.WRITEEXPORT(OUTLfile,OUTLText,"Site ID,Latitude,Longitude,Richness,Cell ID,Taxon,Genus\n")
+				self.GBIFGeneric.WRITEEXPORT(OUTLfile,OUTLText,"Site ID,Latitude,Longitude,Cell ID,Taxon,Genus\n")
+			#	self.GBIFGeneric.WRITEEXPORT(OUTSfile,OUTSText,"Sequence ID,Site ID,CellLat,CellLong,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords\n")
+				self.GBIFGeneric.WRITEEXPORT(OUTSfile,OUTSText,"Sequence ID,Site ID,Taxon,Genus,TrueLat,TrueLong,Count,AllRecords\n")
 				description = self.__description__.encode('utf-8')
 				self.GBIFGeneric.WRITEEXPORT(OUTDfile,description,"")
 			dlg.Destroy()

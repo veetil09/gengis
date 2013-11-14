@@ -28,8 +28,11 @@
 #include <wx/statbox.h>
 #include <wx/spinctrl.h>
 #include <wx/notebook.h>
-#include <wx/richtext/richtextctrl.h>
+#include <wx/radiobut.h>
+#include <wx/slider.h>
 #include <wx/button.h>
+#include <wx/gbsizer.h>
+#include <wx/richtext/richtextctrl.h>
 #include <wx/dialog.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -107,6 +110,18 @@ namespace GenGIS
 				ID_SPIN_DROPLINE_THICKNESS,
 				ID_COLOUR_PICKER_DROPLINE,
 				ID_CHECK_SHOW_CHART,
+				wxID_RADIO_TILE_COLOUR_NO_FILL,
+				wxID_RADIO_TILE_COLOUR_UNIFORM_FILL,
+				wxID_RADIO_TILE_COLOUR_MAP_FILL,
+				wxID_DIVIDE_BY_BOX,
+				wxID_DIVIDE_INTO_DEGREES,
+				wxID_DIVIDE_INTO_PIXELS,
+				wxID_DIVIDE_BY_AXIS,
+				wxID_RADIO_GRID_DIVIDE_ALONG_LATITUDE,
+				wxID_RADIO_GRID_DIVIDE_ALONG_LONGITUDE,
+				wxID_RADIO_GRID_ALIGN_TO_ORIGIN,
+				wxID_RADIO_GRID_ALIGN_TO_LOCATION,
+				wxID_RADIO_GRID_ALIGN_TO_COORDINATES,
 				ID_PNL_METADATA,
 				ID_LBL_LAYER_SOURCE,
 				ID_TXT_LAYER_SOURCE,
@@ -218,6 +233,72 @@ namespace GenGIS
 			wxColourPickerCtrl* m_colourChartDropLine;
 			
 			wxCheckBox* m_chkShowCharts;
+			wxPanel* m_pnlGrid;
+			wxNotebook* m_notebook6;
+			wxPanel* m_panel13;
+			wxRadioButton* m_radioGridNoFill;
+			
+			wxRadioButton* m_radioGridUniformColour;
+			wxColourPickerCtrl* m_gridTileColour;
+			wxRadioButton* m_radioGridColourMap;
+			
+			wxStaticText* m_txtTileAlpha;
+			wxSlider* m_sliderTileAlpha;
+			wxStaticLine* m_staticline13;
+			wxStaticText* m_txtGridFieldToChart;
+			wxComboBox* m_choiceGridFieldToChart;
+			wxStaticText* m_txtGridDefaultColour;
+			wxColourPickerCtrl* m_colourGridDefaultColour;
+			wxStaticText* m_txtGridColourMap;
+			wxComboBox* m_choiceGridColourMap;
+			wxStaticText* m_txtDefaultTileOpacity;
+			wxSlider* m_sliderDefaultTileAlpha;
+			wxScrolledWindow* m_scrolledWindowGridColour;
+			wxCheckBox* m_chkShowGridBorders;
+			wxStaticLine* m_staticline101;
+			wxStaticText* m_txtGridBorderColour;
+			wxStaticText* m_txtGridBorderAlpha;
+			wxStaticText* m_txtGridBorderThickness;
+			wxStaticText* m_txtGridBorderStyle;
+			wxColourPickerCtrl* m_gridBorderColour;
+			wxSlider* m_sliderBorderAlpha;
+			wxSpinCtrl* m_spinGridBorderThickness;
+			wxComboBox* m_cboGridBorderStyle;
+			wxPanel* m_panel12;
+			wxRadioButton* m_radioBox;
+			wxSpinCtrl* m_spinBoxDivisions;
+			wxRadioButton* m_radioBtnDegrees;
+			wxRadioButton* m_radioBtnPixels;
+			wxRadioButton* m_radioAxis;
+			wxSpinCtrl* m_spinGridDivisions;
+			wxRadioButton* m_radioBtnLatitude;
+			wxRadioButton* m_radioBtnLongitude;
+			wxRadioButton* m_radioAlignToOrigin;
+			
+			wxRadioButton* m_radioAlignToLocation;
+			wxComboBox* m_choiceAlignToLocation;
+			wxRadioButton* m_radioAlignToCoordinates;
+			wxStaticText* m_txtLatitude;
+			wxStaticText* m_txtMinLatitude;
+			wxStaticText* m_txtLatitudeLessEqualThan1;
+			wxTextCtrl* m_textCtrlLatitude;
+			wxStaticText* m_txtLatitudeLessEqualThan2;
+			wxStaticText* m_txtMaxLatitude;
+			wxStaticText* m_txtLongitude;
+			wxStaticText* m_txtMinLongitude;
+			wxStaticText* m_txtLongitudeLessEqualThan1;
+			wxTextCtrl* m_textCtrlLongitude;
+			wxStaticText* m_txtLongitudeLessEqualThan2;
+			wxStaticText* m_txtMaxLongitude;
+			wxButton* m_buttonGridPositionReset;
+			wxButton* m_buttonClickMapToAlign;
+			wxCheckBox* m_chkAutoAdjustElevation;
+			wxStaticLine* m_staticline8;
+			wxStaticText* m_lblVerticalElevation;
+			wxTextCtrl* m_textCtrlGridElevation;
+			wxStaticText* m_txtTileFieldChoice;
+			wxComboBox* m_tileFieldChoice;
+			wxCheckBox* m_chkShowGrid;
 			wxPanel* m_pnlMetadata;
 			wxStaticText* m_lblLayerSource;
 			wxTextCtrl* m_txtLayerSource;
@@ -250,6 +331,21 @@ namespace GenGIS
 			virtual void OnSpinAssignTaxa( wxSpinEvent& event ) { event.Skip(); }
 			virtual void OnCboFieldChange( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSpinLineThickness( wxSpinEvent& event ) { event.Skip(); }
+			virtual void OnRadioColourFill( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnChoiceGridFieldToChartChange( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnGridColourMapChange( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnShowGridBorders( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnRadioDivideBy( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnNumberOfDivisions( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnRadioDivideType( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnRadioLatitudeLongitude( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnRadioAlignTo( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnGridChanged( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnAlignToLocationChange( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnCoordinateReset( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnAlignCoordinateToMouse( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnAutoAdjustElevation( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnTileFieldChoiceChange( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnHelp( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnOK( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnApply( wxCommandEvent& event ) { event.Skip(); }

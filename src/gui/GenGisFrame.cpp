@@ -67,6 +67,7 @@
 #include "../gui/LinearAnalysisPlotDlg.hpp"
 #include "../gui/NonlinearAxisTableDlg.hpp"
 #include "../gui/LightingPropertiesDlg.hpp"
+#include "../gui/LocationMergeDlg.hpp"
 #include "../gui/LocationPropertiesDlg.hpp"
 #include "../gui/LocationSetPropertiesDlg.hpp"
 #include "../gui/MapPropertiesDlg.hpp"
@@ -508,11 +509,63 @@ void GenGisFrame::OnSamplesLegendClick( wxMouseEvent& event )
 	}
 }
 
+void GenGisFrame::OnSamplesLegendLocationSetSelect( wxCommandEvent& event )
+{
+	// Get currently selected location set from the choice box
+	m_locationSetLayer = App::Inst().GetLayerTreeController()->GetLocationSetLayer( event.GetSelection() );
+
+	// Return if invalid selection
+	if ( m_locationSetLayer == NULL ) return;
+
+	// Generate the samples legend
+	GenerateSamplesLegend();
+}
+
 // Fills the Samples legend (on the sidebar) with data.
 void GenGisFrame::FillSamplesLegend()
 {
-	if ( m_locationSetLayer == NULL ) return;
+	// Clear the choice box and other controls
+	m_locationSetChoice->Clear();
+	m_legendLocationsSizerColour2->Clear(true);
+	m_legendLocationsSizerShape2->Clear(true);
+	m_legendLocationsSizerSize2->Clear(true);
 
+	// Refresh interface
+	m_legendLocations->FitInside();
+	m_legendLocations->Refresh( false );
+
+	if ( m_locationSetLayer == NULL )
+	{
+		// Set location set pointer to first location set (if available)
+		if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() > 0 )
+		{
+			m_locationSetLayer = App::Inst().GetLayerTreeController()->GetLocationSetLayer( 0 );
+		}
+		else
+		{
+			m_locationSetChoice->Append( wxT( "<No Location Set Loaded>" ) );
+			m_locationSetChoice->SetStringSelection( wxT( "<No Location Set Loaded>" ) );
+			return;
+		}
+	}
+
+	LayerTreeControllerPtr layerTree = App::Inst().GetLayerTreeController();
+
+	// Generate new choices
+	for (uint locSet = 0; locSet < layerTree->GetNumLocationSetLayers(); locSet++)
+	{
+		m_locationSetChoice->Append( wxString( layerTree->GetLocationSetLayer( locSet )->GetName().c_str() ) );
+	}
+
+	// Select currently active location set within choice box
+	m_locationSetChoice->SetStringSelection( wxString(m_locationSetLayer->GetName().c_str() ) );
+
+	// Generate the samples legend
+	GenerateSamplesLegend();
+}
+
+void GenGisFrame::GenerateSamplesLegend()
+{
 	// Set properties for the Colour box
 
 	if ( m_legendLocationsSizerColour2 != NULL)
@@ -581,24 +634,6 @@ void GenGisFrame::FillSamplesLegend()
 				wxString( (*it).c_str(), wxConvISO8859_1 ), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 			m_legendLocationsSizerColour2->Add(id, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
 		}
-
-		//std::map<std::wstring, Colour> colourMapValues = locationSetController->GetColourMap()->GetNameToColourMap();
-		//std::map<std::wstring, Colour>::const_iterator colourIt;
-
-		//for ( colourIt = colourMapValues.begin(); colourIt != colourMapValues.end(); ++colourIt )
-		//{
-		//	// Load colour and insert into legend
-		//	CustomColourButton* customColourButton = new CustomColourButton(
-		//		m_legendLocations, NULL, wxColour( (colourIt->second).GetRedInt(), (colourIt->second).GetGreenInt(), (colourIt->second).GetBlueInt()) );
-		//	m_legendLocationsSizerColour2->Add( customColourButton, 0, wxALL, 5 );
-
-		//	customColourButton->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( GenGisFrame::OnSamplesLegendClick ), NULL, this );
-
-		//	// Load colour description and insert into legend
-		//	wxStaticText* id = new wxStaticText( m_legendLocations, 0,
-		//		wxString( colourIt->first.c_str(), wxConvISO8859_1 ), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-		//	m_legendLocationsSizerColour2->Add(id, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5);
-		//}
 	}
 
 	// Set properties for the Shape box
@@ -1672,6 +1707,29 @@ void GenGisFrame::LayerOpenVectorMap( wxFileName fullPath, uint mapIndex )
 	}
 }
 
+void GenGisFrame::OnLocationMerge( wxCommandEvent& event)
+{
+	if ( App::Inst().GetLayerTreeController()->GetNumMapLayers() != 1 )
+	{
+		wxMessageBox(wxT("Please load a map file before loading a location file."),
+					wxT("Load map file first"), wxOK | wxICON_INFORMATION);
+		return;
+	}
+	if ( App::Inst().GetLayerTreeController()->GetNumLocationSetLayers() <= 1 )
+	{
+		wxMessageBox(wxT("Please load more than one location set."),
+			wxT("Needs multiple location sets"), wxOK | wxICON_INFORMATION);
+		return;
+	}
+	//passed checks now need:
+	//launch check box
+	//populate box with N number of location layers
+	//Go and Close buttons
+	//take those selected and merge into one location layer
+	//add location layer to GenGIS as location[0]
+	LocationMergeDlg* dlg = new LocationMergeDlg(this);
+	dlg->Show();
+}
 void GenGisFrame::OnLayerOpenLocations( wxCommandEvent& event )
 {
 	if ( App::Inst().GetLayerTreeController()->GetNumMapLayers() != 1 )
@@ -2926,7 +2984,7 @@ void GenGisFrame::OnLayerRemove( wxCommandEvent& event )
 	if(answer == wxYES)
 	{
 		App::Inst().GetLayerTreeController()->OnLayerRemove(event);
-
+		FillSamplesLegend();
 		App::Inst().SetSaveStatus( SESSION_NOT_SAVED );
 	}
 }

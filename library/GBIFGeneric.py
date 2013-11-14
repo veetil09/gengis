@@ -22,20 +22,25 @@
 
 import re
 import wx
+from decimal import Decimal
+from operator import itemgetter
 
-class GBIFGeneric:	
-	def GETTEXT (self,obs_list,conversions_list):
+class GBIFGeneric:
+	
+	def roundCoord(self,num):
+		return round(Decimal(str(num)),1)
+	
+	def GETTEXT (self,obs_list):
 		OUTL=""
 		OUTS=""
-		for obs,convs in zip(obs_list,conversions_list):
-	#		import pdb; pdb.set_trace()
-			locs, seqs = self.MAKEOUTS(obs,convs)
+		for obs in obs_list:
+			locs, seqs = self.MAKEOUTS(obs)
 			OUTL+=locs
 			OUTS+=seqs
 		return(OUTL,OUTS)
 		
 	#	Transforms the mined data into text to be output
-	def MAKEOUTS (self,obs,conversions):
+	def MAKEOUTS (self,obs):
 		uniqueSiteID = set()
 		OUTLTEXT=""
 		OUTSTEXT=""
@@ -44,14 +49,17 @@ class GBIFGeneric:
 			if len(obs[cellOut].keys()) > 0:
 				for taxOut in sorted(obs[cellOut].keys()):
 					thisList=obs[cellOut][taxOut]
-					for ent in thisList:
-						fullLat = float(re.sub(r'\<.*?\>','',ent[1]))
-						fullLon = float(re.sub(r'\<.*?\>','',ent[2]))
-						siteID = "%s_%f_%f" %(taxOut,fullLat,fullLon)
+					for ent in sorted(thisList,key=itemgetter(1,2)):
+						fullLat = ent[1]
+						fullLon = ent[2]
+						siteID = "%s_%f_%f" %(ent[3],fullLat,fullLon)
+						siteID = re.sub(' ','_',siteID)
 						if siteID not in uniqueSiteID:
 							uniqueSiteID.add(siteID)
-							OUTLTEXT += ("%s,%f,%f,%d,%d\n" % (siteID, fullLat, fullLon, len(obs[cellOut].keys()), cellOut ))
-						toKey = "%s,%f,%f,%s,%s,%s,%s" %(siteID, conversions[cellOut][0],conversions[cellOut][1],ent[3],taxOut,ent[1],ent[2])
+						#	OUTLTEXT += ("%s,%f,%f,%d,%d,%s,%s\n" % (siteID, fullLat, fullLon, len(obs[cellOut].keys()), cellOut+(int(fullLon) +180),ent[3],taxOut ))
+							OUTLTEXT += ("%s,%f,%f,%d,%s,%s\n" % (siteID, fullLat, fullLon, cellOut+(int(fullLon) +180),ent[3],taxOut ))
+					#	toKey = "%s,%f,%f,%s,%s,%s,%s" %(siteID, fullLat,fullLon,ent[3],taxOut,ent[1],ent[2])
+						toKey = "%s,%s,%s,%s,%s" %(siteID,ent[3],taxOut,ent[1],ent[2])
 						toKey = re.sub(r'\<.*?\>','',toKey)
 						try:
 							seqFileAgg[toKey].extend([ent[0]])
@@ -60,30 +68,56 @@ class GBIFGeneric:
 		seqFileAgg_items = seqFileAgg.items()
 		seqFileAgg_items.sort(key=lambda x: x)
 		for outME,IDlist in seqFileAgg_items:
-			OUTSTEXT += ("%d,%s,%d,%s\n" %(IDlist[0],outME,len(IDlist),'|'.join(str(i) for i in IDlist)))
+			save = IDlist[0]
+			IDlist = set(IDlist)
+			OUTSTEXT += ("%d,%s,%d,%s\n" %(save,outME,len(IDlist),'|'.join(str(i) for i in IDlist)))
 		return(OUTLTEXT,OUTSTEXT)
 				
 	# Populate the Results Table using Taxa and Geographic boundaries
 	def CPPOUT (self,input):
 		array = input.split("\n")
 		return (array)
+		
+	def drange(self,start,stop,step):
+		r = self.roundCoord(start)
+		list = []
+		while (r + step) <= (stop):
+			list.append(self.roundCoord(r))
+			r+= self.roundCoord(step)
+		if r < stop:
+			r -= self.roundCoord(step)
+			r += (stop-step-r)
+			tempR = self.roundCoord(r)	#quick rounding to try and account for the innacuracy of floats
+			list.append(tempR)
+		return(list)
+	
 	
 	#subdivide a given range by longitude
-	def SUBDIVIDECOL(self,minlatitude,maxlatitude,minlongitude,maxlongitude):
-		longitudeRange = maxlongitude - minlongitude
+	def SUBDIVIDECOL(self,minlatitude,maxlatitude,minlongitude,maxlongitude,numSubs,step):
 		new_coords = []
-		longitudeBase= float(longitudeRange)/float(10)
-		for i in range(0,10):
-			new_coords.append(( minlatitude,maxlatitude,minlongitude+longitudeBase * i,minlongitude+longitudeBase* (i+1)))
+		tem = self.drange(minlongitude, maxlongitude,step)
+		#protecting for rounding errors
+		minlongitude = self.roundCoord(minlongitude)
+		maxlongitude = self.roundCoord(maxlongitude)
+		step = self.roundCoord(step)
+		for i in tem:
+			minl = i
+			maxl = i+step
+			new_coords.append((minlatitude,maxlatitude,minl,maxl))
 		return(new_coords)
 	
 	#subdivide a given range by latitude
-	def SUBDIVIDEROW(self,minlatitude,maxlatitude,minlongitude,maxlongitude):
-		latitudeRange = maxlatitude - minlatitude
+	def SUBDIVIDEROW(self,minlatitude,maxlatitude,minlongitude,maxlongitude,numSubs,step):
 		new_coords = []
-		latitudeBase= float(latitudeRange)/float(10)
-		for i in range(0,10):
-			new_coords.append((minlatitude + latitudeBase*i,minlatitude + latitudeBase *(i+1),minlongitude,maxlongitude))
+		tem = self.drange(minlatitude,maxlatitude,step)
+		#protecting for rounding errors
+		minlatitude = self.roundCoord(minlatitude)
+		maxlatitude = self.roundCoord(maxlatitude)
+		step = self.roundCoord(step)
+		for i in tem:
+			minl = i
+			maxl = i+step
+			new_coords.append((minl,maxl,minlongitude,maxlongitude))
 		return(new_coords)	
 		
 	def WRITEEXPORT(self,outfile,outtext,header):

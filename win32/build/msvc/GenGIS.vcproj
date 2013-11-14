@@ -278,6 +278,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\src\core\LocationGrid.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\src\core\LocationLayer.cpp"
 					>
 				</File>
@@ -375,6 +379,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\src\core\StudyModel.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\core\TileModel.cpp"
 					>
 				</File>
 				<File
@@ -543,6 +551,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\src\gui\LinearAnalysisPlotDlg.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\gui\LocationMergeDlg.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\gui\LocationMergeLayout.cpp"
 					>
 				</File>
 				<File
@@ -892,6 +908,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\src\core\LocationGrid.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\src\core\LocationLayer.hpp"
 					>
 				</File>
@@ -985,6 +1005,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\src\core\StudyModel.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\core\TileModel.hpp"
 					>
 				</File>
 				<File
@@ -1165,6 +1189,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\src\gui\LinearAnalysisPlotDlg.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\gui\LocationMergeDlg.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\gui\LocationMergeLayout.h"
 					>
 				</File>
 				<File

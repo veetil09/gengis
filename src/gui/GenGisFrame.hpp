@@ -55,6 +55,8 @@ namespace GenGIS
 		void FillSequenceLegend();
 
 		void FillSamplesLegend();
+		void GenerateSamplesLegend();
+		void OnSamplesLegendLocationSetSelect( wxCommandEvent& event );
 		void OnSamplesLegendClick( wxMouseEvent& event );
 		void OnSamplesLegendPaint(wxPaintEvent& WXUNUSED(event));
 
@@ -229,6 +231,9 @@ namespace GenGIS
 
 		/** Layer->Open tree layer event handler. */
 		void OnLayerOpenTree( wxCommandEvent& event );
+
+		/** Layer->Merge location layer event handler. */
+		void OnLocationMerge(wxCommandEvent& event);
 
 		/** Layer->Open sequence data event handler. */
 		void OnLayerOpenSequenceData( wxCommandEvent& event );

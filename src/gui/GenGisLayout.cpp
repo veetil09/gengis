@@ -78,6 +78,11 @@ GenGisLayout::GenGisLayout( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_legendLocations->SetScrollRate( 5, 5 );
 	m_legendLocationsSizer = new wxBoxSizer( wxVERTICAL );
 	
+	wxArrayString m_locationSetChoiceChoices;
+	m_locationSetChoice = new wxChoice( m_legendLocations, wxID_LOCATION_SET_CHOICE, wxDefaultPosition, wxDefaultSize, m_locationSetChoiceChoices, 0 );
+	m_locationSetChoice->SetSelection( 0 );
+	m_legendLocationsSizer->Add( m_locationSetChoice, 0, wxALL, 5 );
+	
 	m_legendLocationsSizerColour = new wxStaticBoxSizer( new wxStaticBox( m_legendLocations, ID_LEGEND_LOCATIONS_SIZER_COLOUR, wxT("Colour") ), wxVERTICAL );
 	
 	m_legendLocationsSizerColour2 = new wxFlexGridSizer( 0, 2, 0, 0 );
@@ -356,6 +361,10 @@ GenGisLayout::GenGisLayout( wxWindow* parent, wxWindowID id, const wxString& tit
 	#endif
 	m_mnuLayers->Append( m_mnuLayerTree );
 	
+	wxMenuItem* m_menuLocationMerger;
+	m_menuLocationMerger = new wxMenuItem( m_mnuLayers, wxID_ANY, wxString( wxT("Location Set &Merge") ) , wxT("Merge location set layers"), wxITEM_NORMAL );
+	m_mnuLayers->Append( m_menuLocationMerger );
+	
 	wxMenuItem* m_separator7;
 	m_separator7 = m_mnuLayers->AppendSeparator();
 	
@@ -493,6 +502,7 @@ GenGisLayout::GenGisLayout( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_treeCtrlLayer->Connect( wxEVT_LEFT_DOWN, wxMouseEventHandler( GenGisLayout::OnLayerTreeClick ), NULL, this );
 	m_treeCtrlLayer->Connect( wxEVT_COMMAND_TREE_ITEM_MENU, wxTreeEventHandler( GenGisLayout::OnLayerTreePopupMenu ), NULL, this );
 	m_treeCtrlLayer->Connect( wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler( GenGisLayout::OnLayerTreeSelect ), NULL, this );
+	m_locationSetChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( GenGisLayout::OnSamplesLegendLocationSetSelect ), NULL, this );
 	m_console->Connect( wxEVT_CHAR, wxKeyEventHandler( GenGisLayout::OnCharFromKeyboard ), NULL, this );
 	m_console->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( GenGisLayout::OnConsoleEnter ), NULL, this );
 	this->Connect( m_mnuFileNewSession->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnFileNewSession ) );
@@ -518,6 +528,7 @@ GenGisLayout::GenGisLayout( wxWindow* parent, wxWindowID id, const wxString& tit
 	this->Connect( m_mnuLayerLocations->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenLocations ) );
 	this->Connect( m_mnuLayerSequenceData->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenSequenceData ) );
 	this->Connect( m_mnuLayerTree->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenTree ) );
+	this->Connect( m_menuLocationMerger->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLocationMerge ) );
 	this->Connect( m_mnuLayerRemove->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerRemove ) );
 	this->Connect( m_mnuAllLayerRemove->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnAllLayersRemove ) );
 	this->Connect( m_mnuLayerHideAll->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerHideAll ) );
@@ -555,6 +566,7 @@ GenGisLayout::~GenGisLayout()
 	m_treeCtrlLayer->Disconnect( wxEVT_LEFT_DOWN, wxMouseEventHandler( GenGisLayout::OnLayerTreeClick ), NULL, this );
 	m_treeCtrlLayer->Disconnect( wxEVT_COMMAND_TREE_ITEM_MENU, wxTreeEventHandler( GenGisLayout::OnLayerTreePopupMenu ), NULL, this );
 	m_treeCtrlLayer->Disconnect( wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler( GenGisLayout::OnLayerTreeSelect ), NULL, this );
+	m_locationSetChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( GenGisLayout::OnSamplesLegendLocationSetSelect ), NULL, this );
 	m_console->Disconnect( wxEVT_CHAR, wxKeyEventHandler( GenGisLayout::OnCharFromKeyboard ), NULL, this );
 	m_console->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( GenGisLayout::OnConsoleEnter ), NULL, this );
 	this->Disconnect( ID_MNU_FILE_NEW_SESSION, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnFileNewSession ) );
@@ -580,6 +592,7 @@ GenGisLayout::~GenGisLayout()
 	this->Disconnect( ID_MNU_LAYER_ADD_LOCATIONS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenLocations ) );
 	this->Disconnect( ID_MNU_LAYER_SEQUENCE_DATA, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenSequenceData ) );
 	this->Disconnect( ID_MNU_LAYER_ADD_TREE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerOpenTree ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLocationMerge ) );
 	this->Disconnect( ID_MNU_LAYER_REMOVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerRemove ) );
 	this->Disconnect( ID_MNU_ALL_LAYER_REMOVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnAllLayersRemove ) );
 	this->Disconnect( ID_MNU_LAYER_HIDE_ALL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( GenGisLayout::OnLayerHideAll ) );

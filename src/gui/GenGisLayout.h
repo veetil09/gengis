@@ -20,6 +20,7 @@
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/icon.h>
+#include <wx/choice.h>
 #include <wx/statbox.h>
 #include <wx/scrolwin.h>
 #include <wx/notebook.h>
@@ -50,6 +51,7 @@ namespace GenGIS
 				ID_SPLITTER,
 				ID_SIDEBAR,
 				ID_TREE_CTRL_LAYER,
+				wxID_LOCATION_SET_CHOICE,
 				ID_LEGEND_LOCATIONS_SIZER_COLOUR,
 				ID_LEGEND_LOCATIONS_SIZER_SHAPE,
 				ID_LEGEND_LOCATIONS_SIZER_SIZE,
@@ -110,6 +112,7 @@ namespace GenGIS
 			wxTreeCtrl* m_treeCtrlLayer;
 			wxScrolledWindow* m_legendLocations;
 			wxBoxSizer* m_legendLocationsSizer;
+			wxChoice* m_locationSetChoice;
 			wxStaticBoxSizer* m_legendLocationsSizerColour;
 			wxFlexGridSizer* m_legendLocationsSizerColour2;
 			wxStaticBoxSizer* m_legendLocationsSizerShape;
@@ -147,6 +150,7 @@ namespace GenGIS
 			virtual void OnLayerTreeClick( wxMouseEvent& event ) { event.Skip(); }
 			virtual void OnLayerTreePopupMenu( wxTreeEvent& event ) { event.Skip(); }
 			virtual void OnLayerTreeSelect( wxTreeEvent& event ) { event.Skip(); }
+			virtual void OnSamplesLegendLocationSetSelect( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnConsoleEnter( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnFileNewSession( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnFileOpenSession( wxCommandEvent& event ) { event.Skip(); }
@@ -171,6 +175,7 @@ namespace GenGIS
 			virtual void OnLayerOpenLocations( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnLayerOpenSequenceData( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnLayerOpenTree( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnLocationMerge( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnLayerRemove( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAllLayersRemove( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnLayerHideAll( wxCommandEvent& event ) { event.Skip(); }

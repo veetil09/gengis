@@ -26,6 +26,7 @@
 #include "../core/MapView.hpp"
 #include "../core/MapLayer.hpp"
 #include "../core/ChartSetView.hpp"
+#include "../core/LocationGrid.hpp"
 #include "../core/LocationLayer.hpp"
 #include "../core/SequenceLayer.hpp"
 #include "../core/SequenceController.hpp"
@@ -41,7 +42,12 @@
 using namespace GenGIS;
 
 LocationSetLayer::LocationSetLayer(uint id, LayerPtr parent, ChartSetViewPtr chartSetView) :
+<<<<<<< HEAD
 	Layer(id, Layer::LOCATION_SET, parent), m_nextAvailableCategory(0), m_activeCategory(0), m_chartSetView(chartSetView), m_locationSetController(new LocationSetController())
+=======
+	Layer(id, Layer::LOCATION_SET, parent), m_chartSetView(chartSetView), m_locationGrid(new LocationGrid()),
+		m_locationSetController(new LocationSetController())
+>>>>>>> origin/AlexDev
 {
 
 }
@@ -51,6 +57,7 @@ void LocationSetLayer::serialize(Archive & ar, const unsigned int version)
 {
 	ar & m_nextAvailableCategory; // unsigned int
 	ar & boost::serialization::base_object<Layer>(*this);
+	ar & m_locationGrid;          // LocationGridPtr
 	ar & m_locationLayers;        // std::vector<LocationLayerPtr>
 	ar & m_locationSetController; // LocationSetControllerPtr
 }
@@ -172,6 +179,7 @@ void LocationSetLayer::Render()
 		return;
 
 	m_chartSetView->Render();
+	m_locationGrid->Render();
 
 	foreach(LocationLayerPtr locationLayer, m_locationLayers)
 	{
